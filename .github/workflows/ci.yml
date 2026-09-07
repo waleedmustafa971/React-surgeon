@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # Unit tests never launch a browser; the replay verifier installs Chromium
+  # on demand. Skipping the postinstall download keeps CI to a single minute.
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+
+jobs:
+  check:
+    name: ${{ matrix.os }} · node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: ["22.12", "24"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Demo app is in its documented buggy state
+        run: npm run check:demo
+
+      - name: Formatting
+        run: npx prettier --check .
+
+  package:
+    name: Package extension
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.12"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Build the VSIX
+        run: npm run package:vscode
+      - name: Verify the VSIX activates in isolation
+        run: npm run test:vsix
+      - uses: actions/upload-artifact@v4
+        with:
+          name: react-surgeon-vsix
+          path: dist/*.vsix
+          if-no-files-found: error
+
+  # The end-to-end test performs CPU inference with a ~1 GB local model, so it
+  # is opt-in rather than part of every push.
+  integration:
+    name: Integration (real local model)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.12"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Install llama.cpp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential
+          git clone --depth 1 https://github.com/ggml-org/llama.cpp /tmp/llama.cpp
+          cmake -B /tmp/llama.cpp/build -S /tmp/llama.cpp -DLLAMA_CURL=ON
+          cmake --build /tmp/llama.cpp/build --config Release -j --target llama-server
+          echo "/tmp/llama.cpp/build/bin" >> "$GITHUB_PATH"
+      - run: npx playwright install --with-deps chromium
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: ""
+      - run: npm run test:integration
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-proof
+          path: dist/integration-proof.json
+          if-no-files-found: warn

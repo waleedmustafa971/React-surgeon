@@ -1,7 +1,33 @@
 {
   "name": "@react-surgeon/shared",
   "version": "0.1.0",
+  "description": "Shared types and schemas for React Surgeon.",
+  "keywords": [
+    "react-surgeon",
+    "react",
+    "types"
+  ],
+  "license": "MIT",
+  "author": "Waleed Mustafa",
+  "homepage": "https://github.com/waleedmustafa971/React-surgeon#readme",
+  "bugs": {
+    "url": "https://github.com/waleedmustafa971/React-surgeon/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/waleedmustafa971/React-surgeon.git",
+    "directory": "packages/shared"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "type": "module",
   "main": "dist/index.js",
-  "types": "src/index.ts"
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

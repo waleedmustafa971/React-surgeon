@@ -1,0 +1,26 @@
+# Normalize to LF in the repository and on checkout, on every platform.
+# The patch engine preserves each file's existing line endings, so a mixed
+# checkout would otherwise produce diffs that differ by contributor OS.
+* text=auto eol=lf
+
+# Shell scripts must keep LF even on Windows; the pre-commit hook runs under sh.
+*.sh text eol=lf
+.githooks/* text eol=lf
+
+# PowerShell helpers are Windows-only and are conventionally CRLF.
+*.ps1 text eol=crlf
+
+# Never touch binaries.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.gguf binary
+*.vsix binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+
+# Collapsed by default in reviews, but still diffable — lockfile changes are
+# how dependency substitutions get caught.
+package-lock.json linguist-generated

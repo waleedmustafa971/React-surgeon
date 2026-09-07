@@ -3,13 +3,15 @@
   "displayName": "React Surgeon",
   "description": "Click a bug. Diagnose, fix, and verify React applications locally.",
   "version": "0.1.0",
-  "publisher": "react-surgeon-local",
+  "publisher": "waleedmustafa971",
   "license": "MIT",
   "engines": {
     "vscode": "^1.96.0"
   },
   "categories": [
-    "Other"
+    "Testing",
+    "Debuggers",
+    "AI"
   ],
   "main": "./dist/extension.cjs",
   "activationEvents": [
@@ -81,5 +83,27 @@
     "untrustedWorkspaces": {
       "supported": false
     }
+  },
+  "keywords": [
+    "react",
+    "debugging",
+    "verification",
+    "playwright",
+    "local-llm",
+    "ai"
+  ],
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#0F2748",
+    "theme": "dark"
+  },
+  "homepage": "https://github.com/waleedmustafa971/React-surgeon#readme",
+  "bugs": {
+    "url": "https://github.com/waleedmustafa971/React-surgeon/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/waleedmustafa971/React-surgeon.git",
+    "directory": "packages/vscode"
   }
 }

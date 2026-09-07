@@ -1,16 +1,49 @@
 {
   "name": "@react-surgeon/core",
   "version": "0.1.0",
+  "description": "Analysis, repair agent, patching and verification engine for React Surgeon.",
+  "keywords": [
+    "react-surgeon",
+    "react",
+    "codemod",
+    "babel",
+    "playwright",
+    "verification",
+    "ai",
+    "local-llm"
+  ],
+  "license": "MIT",
+  "author": "Waleed Mustafa",
+  "homepage": "https://github.com/waleedmustafa971/React-surgeon#readme",
+  "bugs": {
+    "url": "https://github.com/waleedmustafa971/React-surgeon/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/waleedmustafa971/React-surgeon.git",
+    "directory": "packages/core"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "type": "module",
   "main": "dist/index.js",
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@babel/parser": "^7.28.0",
     "@babel/traverse": "^7.28.0",
     "@babel/types": "^7.28.0",
+    "@react-surgeon/shared": "0.1.0",
+    "@types/node": ">=22.12.0",
     "diff": "^8.0.0",
-    "zod": "^3.25.0",
+    "playwright-core": "^1.56.0",
     "ws": "^8.18.0",
-    "playwright-core": "^1.56.0"
+    "zod": "^3.25.0"
   }
 }

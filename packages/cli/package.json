@@ -1,12 +1,50 @@
 {
   "name": "@react-surgeon/cli",
   "version": "0.1.0",
+  "description": "Click a bug. Diagnose, fix, and verify React applications locally.",
+  "keywords": [
+    "react-surgeon",
+    "react",
+    "cli",
+    "debugging",
+    "ai",
+    "local-llm",
+    "playwright",
+    "verification"
+  ],
+  "license": "MIT",
+  "author": "Waleed Mustafa",
+  "homepage": "https://github.com/waleedmustafa971/React-surgeon#readme",
+  "bugs": {
+    "url": "https://github.com/waleedmustafa971/React-surgeon/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/waleedmustafa971/React-surgeon.git",
+    "directory": "packages/cli"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "type": "module",
   "bin": {
     "react-surgeon": "dist/index.js"
   },
   "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
-    "commander": "^14.0.0"
+    "@babel/parser": "^7.28.0",
+    "@babel/traverse": "^7.28.0",
+    "@babel/types": "^7.28.0",
+    "commander": "^14.0.0",
+    "diff": "^8.0.0",
+    "playwright-core": "^1.56.0",
+    "ws": "^8.18.0",
+    "zod": "^3.25.0"
   }
 }

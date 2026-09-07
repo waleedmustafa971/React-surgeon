@@ -6,31 +6,31 @@ Validated on 7 September 2026 in `D:\React Agent`.
 
 Working MVP, including a real local-model Click → Source → Patch → Static checks → Browser replay → VERIFIED workflow. No demo filename or fix is hardcoded in the agent. The integration harness identifies the demo button, while Qwen chooses the actual code change.
 
-| Acceptance check | Result |
-| --- | --- |
-| npm dependencies | Installed; npm audit reported zero vulnerabilities |
-| TypeScript strict typecheck | Passed |
-| ESLint | Passed |
-| Unit tests | 22 passed |
-| Workspace build | Passed |
-| React detection, AST, hooks, import graph | Implemented and tested |
-| Dev source metadata and click suppression | Passed in Chromium |
-| Overlay hover and authenticated localhost bridge | Passed in Chromium |
-| Reproduction recorder | Recorded and delivered a cart click |
-| llama.cpp CPU provider | Installed executable discovered and used |
-| Qwen Q4_K_M / 4096 context | Downloaded; real JSON inference test passed |
-| Agent patch and undo | Real Qwen patch verified; demo restored with undo |
-| Demo typecheck / lint / tests / build | All passed after model patch |
-| Browser replay | Three assertions passed; no console, page or request errors |
-| Assertion-free replay | Correctly rejected |
-| Production instrumentation | Absent from production bundle |
-| Proof persistence | JSON evidence saved to dist/integration-proof.json |
-| CLI scan / X-Ray / model lifecycle | Exercised successfully |
-| Model stop | Authenticated control request stopped the owned process |
-| VSIX | Packaged with its required Playwright runtime |
-| Packaged extension smoke test | Extracted archive, activated using a VS Code API stub, checked commands/sidebar CSP, launched packaged Chromium runtime |
-| Actual VS Code GUI walkthrough | Not performed; install the VSIX to exercise the panel interactively |
-| Documentation | README, demo, architecture, agent, security, development and this report |
+| Acceptance check                                 | Result                                                                                                                  |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| npm dependencies                                 | Installed; npm audit reported zero vulnerabilities                                                                      |
+| TypeScript strict typecheck                      | Passed                                                                                                                  |
+| ESLint                                           | Passed                                                                                                                  |
+| Unit tests                                       | 22 passed                                                                                                               |
+| Workspace build                                  | Passed                                                                                                                  |
+| React detection, AST, hooks, import graph        | Implemented and tested                                                                                                  |
+| Dev source metadata and click suppression        | Passed in Chromium                                                                                                      |
+| Overlay hover and authenticated localhost bridge | Passed in Chromium                                                                                                      |
+| Reproduction recorder                            | Recorded and delivered a cart click                                                                                     |
+| llama.cpp CPU provider                           | Installed executable discovered and used                                                                                |
+| Qwen Q4_K_M / 4096 context                       | Downloaded; real JSON inference test passed                                                                             |
+| Agent patch and undo                             | Real Qwen patch verified; demo restored with undo                                                                       |
+| Demo typecheck / lint / tests / build            | All passed after model patch                                                                                            |
+| Browser replay                                   | Three assertions passed; no console, page or request errors                                                             |
+| Assertion-free replay                            | Correctly rejected                                                                                                      |
+| Production instrumentation                       | Absent from production bundle                                                                                           |
+| Proof persistence                                | JSON evidence saved to dist/integration-proof.json                                                                      |
+| CLI scan / X-Ray / model lifecycle               | Exercised successfully                                                                                                  |
+| Model stop                                       | Authenticated control request stopped the owned process                                                                 |
+| VSIX                                             | Packaged with its required Playwright runtime                                                                           |
+| Packaged extension smoke test                    | Extracted archive, activated using a VS Code API stub, checked commands/sidebar CSP, launched packaged Chromium runtime |
+| Actual VS Code GUI walkthrough                   | Not performed; install the VSIX to exercise the panel interactively                                                     |
+| Documentation                                    | README, demo, architecture, agent, security, development and this report                                                |
 
 ## Machine and installations
 

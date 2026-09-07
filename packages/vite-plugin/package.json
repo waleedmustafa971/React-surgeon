@@ -1,16 +1,46 @@
 {
   "name": "@react-surgeon/vite-plugin",
   "version": "0.1.0",
+  "description": "Development-only Vite plugin that maps clicked DOM elements back to JSX source for React Surgeon.",
+  "keywords": [
+    "react-surgeon",
+    "vite-plugin",
+    "vite",
+    "react",
+    "jsx",
+    "devtools",
+    "source-mapping"
+  ],
+  "license": "MIT",
+  "author": "Waleed Mustafa",
+  "homepage": "https://github.com/waleedmustafa971/React-surgeon#readme",
+  "bugs": {
+    "url": "https://github.com/waleedmustafa971/React-surgeon/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/waleedmustafa971/React-surgeon.git",
+    "directory": "packages/vite-plugin"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "type": "module",
   "main": "dist/index.js",
-  "types": "src/index.ts",
-  "peerDependencies": {
-    "vite": ">=6"
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@babel/parser": "^7.28.0",
     "@babel/traverse": "^7.28.0",
     "@babel/types": "^7.28.0",
     "magic-string": "^0.30.0"
+  },
+  "peerDependencies": {
+    "vite": ">=6"
   }
 }

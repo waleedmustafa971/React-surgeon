@@ -2,11 +2,11 @@
 
 Start with `npm run demo`. Connect using `npm run surgeon -- --project examples/buggy-react-app start` and open its printed URL.
 
-| Bug | Select | Expected | Scenario |
-| --- | --- | --- | --- |
-| Counter | Add to Cart | One item per click; initial code adds two | scenarios/cart.json |
-| Login redirect | Sign in | Navigate to /dashboard; initial code navigates to /login | scenarios/login.json |
-| Direct mutation | Remove Keyboard | UI immediately shows two items; initial code mutates the same array | scenarios/list.json |
+| Bug             | Select          | Expected                                                            | Scenario             |
+| --------------- | --------------- | ------------------------------------------------------------------- | -------------------- |
+| Counter         | Add to Cart     | One item per click; initial code adds two                           | scenarios/cart.json  |
+| Login redirect  | Sign in         | Navigate to /dashboard; initial code navigates to /login            | scenarios/login.json |
+| Direct mutation | Remove Keyboard | UI immediately shows two items; initial code mutates the same array | scenarios/list.json  |
 
 For example:
 
