@@ -94,7 +94,24 @@ react-surgeon init
 
 `init` does the whole setup in one command: detects your React project, writes `.react-surgeon/config.json`, adds `surgeon()` to your Vite config ahead of the React plugin, installs Chromium, then downloads and smoke-tests the model. It is idempotent, so re-run it after fixing anything it flags. Use `--skip-browser` or `--skip-model` to defer the slow parts.
 
-The Vite plugin is what maps a clicked element back to its JSX, so it belongs to the app being repaired rather than the CLI. The first model download is roughly 1 GB and takes a few minutes. `react-surgeon doctor` reports OS, RAM, CPU, Node, which provider is configured and where inference will happen.
+The Vite plugin is what maps a clicked element back to its JSX, so it belongs to the app being repaired rather than the CLI.
+
+<details>
+<summary>Minimal install, if you already run Ollama or LM Studio</summary>
+
+The bundled runtime is an `optionalDependency`, so it can be skipped:
+
+```bash
+npm install -g @react-surgeon/cli --omit=optional
+```
+
+That takes the dependency tree from 120 packages to 24, with **no install scripts at all**, leaving only Babel, `playwright-core`, `commander`, `diff`, `ws` and `zod`. Everything `node-llama-cpp` brings with it, including its native binaries and its postinstall, is gone.
+
+Then set `model.provider` to `openai-compatible` and point it at a server you already run. `doctor` will report `bundledRuntime: Missing`, which is expected on this path.
+
+Worth knowing if you audit dependencies: the default install needs filesystem access to edit your source, shell access to run your npm scripts, and network access to download the model and Chromium. Those are inherent to what the tool does rather than incidental.
+
+</details> The first model download is roughly 1 GB and takes a few minutes. `react-surgeon doctor` reports OS, RAM, CPU, Node, which provider is configured and where inference will happen.
 
 <details>
 <summary>Working from a clone of this repository instead</summary>
