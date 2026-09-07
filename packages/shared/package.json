@@ -1,6 +1,6 @@
 {
   "name": "@react-surgeon/shared",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Shared types and schemas for React Surgeon.",
   "keywords": [
     "react-surgeon",
@@ -25,7 +25,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "publishConfig": {
     "access": "public"

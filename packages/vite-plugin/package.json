@@ -1,6 +1,6 @@
 {
   "name": "@react-surgeon/vite-plugin",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Development-only Vite plugin that maps clicked DOM elements back to JSX source for React Surgeon.",
   "keywords": [
     "react-surgeon",
@@ -29,7 +29,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "publishConfig": {
     "access": "public"

@@ -21,7 +21,11 @@ for (const name of ["shared", "core", "vite-plugin", "cli", "vscode"]) {
     format: name === "vscode" ? "cjs" : "esm",
     packages: "external",
     external: ["vscode"],
-    sourcemap: true,
+    // "external" writes the .map but omits the //# sourceMappingURL comment.
+    // The npm tarballs exclude maps (they doubled package size and tripped
+    // supply-chain scanners' obfuscated-code heuristic on their single
+    // 98k-character mappings line), so a linked comment would dangle.
+    sourcemap: name === "vscode" ? true : "external",
     ...(name === "vscode"
       ? {
           define: { "import.meta.url": "__surgeonImportMetaUrl" },
