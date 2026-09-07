@@ -1,0 +1,17 @@
+{
+  "name": "Login redirects to dashboard",
+  "baseURL": "http://127.0.0.1:5173",
+  "steps": [
+    { "action": "navigate", "url": "/login" },
+    {
+      "action": "fill",
+      "role": "textbox",
+      "name": "Email",
+      "value": "demo@example.com"
+    },
+    { "action": "click", "role": "button", "name": "Sign in" },
+    { "action": "assertURL", "value": "/dashboard" },
+    { "action": "reload" },
+    { "action": "assertVisible", "role": "heading", "name": "Dashboard" }
+  ]
+}

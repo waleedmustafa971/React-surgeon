@@ -1,0 +1,55 @@
+{
+  "name": "react-surgeon-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "package:vscode": "node scripts/package.mjs",
+    "demo": "npm run dev -w @react-surgeon/demo",
+    "doctor": "node packages/cli/dist/index.js doctor",
+    "surgeon": "node packages/cli/dist/index.js",
+    "test:integration": "node scripts/integration.mjs",
+    "test:vsix": "node scripts/check-vsix.mjs",
+    "check:demo": "node scripts/check-demo.mjs",
+    "reset:demo": "node scripts/reset-demo.mjs",
+    "prepare": "node scripts/install-hooks.mjs"
+  },
+  "devDependencies": {
+    "@types/babel__generator": "^7.27.0",
+    "@types/babel__traverse": "^7.20.7",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/vscode": "^1.96.0",
+    "@types/ws": "^8.18.1",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.39.0",
+    "prettier": "^3.9.6",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vite": "^6.4.0",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.28.0",
+    "@babel/traverse": "^7.28.0",
+    "@babel/types": "^7.28.0",
+    "commander": "^14.0.0",
+    "diff": "^8.0.0",
+    "magic-string": "^0.30.0",
+    "playwright": "^1.56.0",
+    "ws": "^8.18.0",
+    "zod": "^3.25.0",
+    "playwright-core": "^1.56.0"
+  }
+}

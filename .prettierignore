@@ -1,0 +1,9 @@
+node_modules
+**/node_modules
+**/dist
+**/.react-surgeon
+prompt.txt
+React
+package-lock.json
+**/fixtures
+packages/vscode/runtime

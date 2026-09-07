@@ -1,0 +1,85 @@
+{
+  "name": "react-surgeon",
+  "displayName": "React Surgeon",
+  "description": "Click a bug. Diagnose, fix, and verify React applications locally.",
+  "version": "0.1.0",
+  "publisher": "react-surgeon-local",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.cjs",
+  "activationEvents": [
+    "onView:reactSurgeon.panel"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "reactSurgeon",
+          "title": "React Surgeon",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "reactSurgeon": [
+        {
+          "type": "webview",
+          "id": "reactSurgeon.panel",
+          "name": "React Surgeon"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "reactSurgeon.doctor",
+        "title": "React Surgeon: Doctor"
+      },
+      {
+        "command": "reactSurgeon.start",
+        "title": "React Surgeon: Start"
+      },
+      {
+        "command": "reactSurgeon.stop",
+        "title": "React Surgeon: Stop"
+      },
+      {
+        "command": "reactSurgeon.model",
+        "title": "React Surgeon: Start Local Model"
+      },
+      {
+        "command": "reactSurgeon.select",
+        "title": "React Surgeon: Select UI Element"
+      },
+      {
+        "command": "reactSurgeon.diagnose",
+        "title": "React Surgeon: Diagnose Selected Element"
+      },
+      {
+        "command": "reactSurgeon.verify",
+        "title": "React Surgeon: Verify Current Fix"
+      },
+      {
+        "command": "reactSurgeon.xray",
+        "title": "React Surgeon: Open X-Ray"
+      },
+      {
+        "command": "reactSurgeon.proof",
+        "title": "React Surgeon: Show Proof"
+      },
+      {
+        "command": "reactSurgeon.logs",
+        "title": "React Surgeon: Show Logs"
+      }
+    ]
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    }
+  }
+}

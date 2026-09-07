@@ -1,0 +1,16 @@
+{
+  "name": "@react-surgeon/vite-plugin",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "peerDependencies": {
+    "vite": ">=6"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.28.0",
+    "@babel/traverse": "^7.28.0",
+    "@babel/types": "^7.28.0",
+    "magic-string": "^0.30.0"
+  }
+}

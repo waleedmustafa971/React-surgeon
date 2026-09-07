@@ -1,0 +1,12 @@
+{
+  "name": "@react-surgeon/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "react-surgeon": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "dependencies": {
+    "commander": "^14.0.0"
+  }
+}

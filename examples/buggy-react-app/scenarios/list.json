@@ -1,0 +1,9 @@
+{
+  "name": "Removing an item updates list state",
+  "baseURL": "http://127.0.0.1:5173",
+  "steps": [
+    { "action": "navigate", "url": "/" },
+    { "action": "click", "role": "button", "name": "Remove Keyboard" },
+    { "action": "assertText", "testId": "list-count", "value": "2 items" }
+  ]
+}

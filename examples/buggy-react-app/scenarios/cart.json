@@ -1,0 +1,12 @@
+{
+  "name": "One click adds exactly one item",
+  "baseURL": "http://127.0.0.1:5173",
+  "steps": [
+    { "action": "navigate", "url": "/" },
+    { "action": "assertText", "testId": "cart-count", "value": "0" },
+    { "action": "click", "role": "button", "name": "Add to Cart" },
+    { "action": "assertText", "testId": "cart-count", "value": "1" },
+    { "action": "click", "role": "button", "name": "Add to Cart" },
+    { "action": "assertText", "testId": "cart-count", "value": "2" }
+  ]
+}

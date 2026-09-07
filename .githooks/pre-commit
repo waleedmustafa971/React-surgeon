@@ -1,0 +1,3 @@
+#!/bin/sh
+# Blocks commits that would capture the demo app in a post-fix state.
+node scripts/check-demo.mjs || exit 1

@@ -1,0 +1,6 @@
+src/**
+**/*.map
+node_modules/**/test/**
+node_modules/**/tests/**
+runtime/**/test/**
+runtime/**/tests/**
