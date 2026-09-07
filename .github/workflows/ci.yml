@@ -61,6 +61,12 @@ jobs:
       - run: npm run build
       - name: Build the VSIX
         run: npm run package:vscode
+      # Unlike the unit tests, this check launches the Chromium runtime it
+      # ships, so it needs a real browser despite the workflow-level skip.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: ""
       - name: Verify the VSIX activates in isolation
         run: npm run test:vsix
       - uses: actions/upload-artifact@v4
