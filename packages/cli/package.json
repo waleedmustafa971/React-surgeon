@@ -1,6 +1,6 @@
 {
   "name": "@react-surgeon/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Click a bug. Diagnose, fix, and verify React applications locally.",
   "keywords": [
     "react-surgeon",
@@ -46,5 +46,8 @@
     "playwright-core": "^1.56.0",
     "ws": "^8.18.0",
     "zod": "^3.25.0"
+  },
+  "optionalDependencies": {
+    "node-llama-cpp": "^3.20.0"
   }
 }

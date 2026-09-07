@@ -32,7 +32,7 @@ import type { SelectedElement } from "@react-surgeon/shared";
 const cli = new Command()
   .name("react-surgeon")
   .description("Click a bug. Diagnose, fix, and verify your React app.")
-  .version("0.2.0")
+  .version("0.2.1")
   .option("-p, --project <path>", "React project root", process.cwd())
   .option("--verbose", "Detailed process logs");
 let model: SetupCapableProvider | undefined, bridge: Bridge | undefined;

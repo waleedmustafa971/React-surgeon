@@ -2,7 +2,7 @@
   "name": "react-surgeon",
   "displayName": "React Surgeon",
   "description": "Click a bug. Diagnose, fix, and verify React applications locally.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "waleedmustafa971",
   "license": "MIT",
   "engines": {

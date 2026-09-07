@@ -7,3 +7,4 @@ dist/
 !**/.env.example
 packages/vscode/runtime/
 prompt.txt
+.build-meta/

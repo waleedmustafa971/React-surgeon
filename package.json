@@ -1,6 +1,6 @@
 {
   "name": "react-surgeon-monorepo",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -19,6 +19,7 @@
     "test:integration": "node scripts/integration.mjs",
     "test:vsix": "node scripts/check-vsix.mjs",
     "check:demo": "node scripts/check-demo.mjs",
+    "check:deps": "node scripts/check-deps.mjs",
     "reset:demo": "node scripts/reset-demo.mjs",
     "prepare": "node scripts/install-hooks.mjs"
   },

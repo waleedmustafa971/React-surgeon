@@ -1,11 +1,16 @@
 import { build } from "esbuild";
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createRequire } from "node:module";
+// Metafiles record exactly which packages each bundle imports, which
+// scripts/check-deps.mjs compares against the declared dependencies. They stay
+// out of dist so they are never published.
+await mkdir(".build-meta", { recursive: true });
 for (const name of ["shared", "core", "vite-plugin", "cli", "vscode"]) {
   await mkdir(`packages/${name}/dist`, { recursive: true });
-  await build({
+  const result = await build({
+    metafile: true,
     entryPoints: [
       `packages/${name}/src/${name === "vscode" ? "extension" : "index"}.ts`,
     ],
@@ -26,6 +31,7 @@ for (const name of ["shared", "core", "vite-plugin", "cli", "vscode"]) {
         }
       : {}),
   });
+  await writeFile(`.build-meta/${name}.json`, JSON.stringify(result.metafile));
 }
 
 /**

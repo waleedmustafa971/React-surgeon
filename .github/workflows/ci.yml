@@ -45,6 +45,9 @@ jobs:
       - name: Demo app is in its documented buggy state
         run: npm run check:demo
 
+      - name: Published bundles declare what they import
+        run: npm run check:deps
+
       - name: Formatting
         run: npx prettier --check .
 
