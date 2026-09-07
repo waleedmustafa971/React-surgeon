@@ -1,6 +1,6 @@
 {
   "name": "@react-surgeon/vite-plugin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Development-only Vite plugin that maps clicked DOM elements back to JSX source for React Surgeon.",
   "keywords": [
     "react-surgeon",

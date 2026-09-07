@@ -14,6 +14,10 @@ import {
   parseBuildOutput,
   saveProof,
   localURL,
+  extractJsonText,
+  injectPlugin,
+  describeProvider,
+  configSchema,
 } from "@react-surgeon/core";
 import { instrument } from "@react-surgeon/vite-plugin";
 import type { Scenario, VerificationResult } from "@react-surgeon/shared";
@@ -218,5 +222,67 @@ describe("protocol and verification", () => {
         ),
       ).id,
     ).toBe(p.id);
+  });
+});
+
+describe("model response normalisation", () => {
+  it("passes bare JSON through untouched", () => {
+    expect(extractJsonText('{"type":"complete","summary":"x"}')).toBe(
+      '{"type":"complete","summary":"x"}',
+    );
+  });
+  it("unwraps a fenced block, which some OpenAI-compatible servers emit", () => {
+    const fenced = '```json\n{"type":"complete","summary":"x"}\n```';
+    expect(JSON.parse(extractJsonText(fenced)).type).toBe("complete");
+  });
+  it("unwraps a fence with no language tag", () => {
+    expect(JSON.parse(extractJsonText('```\n{"a":1}\n```')).a).toBe(1);
+  });
+  it("recovers an object surrounded by prose", () => {
+    expect(
+      JSON.parse(extractJsonText('Sure!\n{"a":1}\nHope that helps.')).a,
+    ).toBe(1);
+  });
+  it("lets parseAction accept a fenced action", () => {
+    const action = parseAction(
+      '```json\n{"type":"complete","summary":"ok"}\n```',
+    );
+    expect(action.type).toBe("complete");
+  });
+});
+
+describe("project init", () => {
+  it("puts surgeon() before the React plugin", () => {
+    const source =
+      'import { defineConfig } from "vite";\nimport react from "@vitejs/plugin-react";\nexport default defineConfig({ plugins: [react()] });\n';
+    const out = injectPlugin(source)!;
+    expect(out).toContain('import surgeon from "@react-surgeon/vite-plugin"');
+    expect(out.indexOf("surgeon()")).toBeLessThan(out.indexOf("react()"));
+  });
+  it("refuses to edit a config it already registers in", () => {
+    expect(
+      injectPlugin(
+        'import surgeon from "@react-surgeon/vite-plugin";\nexport default { plugins: [surgeon()] };',
+      ),
+    ).toBeUndefined();
+  });
+  it("refuses to guess when there is no plugins array", () => {
+    expect(injectPlugin("export default {};")).toBeUndefined();
+  });
+});
+
+describe("model providers", () => {
+  it("defaults to the bundled runtime so nothing must be on PATH", () => {
+    expect(configSchema.parse({}).model.provider).toBe("node-llama-cpp");
+  });
+  it("describes where inference will happen", () => {
+    const local = configSchema.parse({}).model;
+    expect(describeProvider(local)).toContain("bundled");
+    expect(
+      describeProvider({ ...local, provider: "openai-compatible" }),
+    ).toContain("127.0.0.1");
+  });
+  it("keeps inference local unless remote is explicitly allowed", () => {
+    expect(configSchema.parse({}).model.allowRemote).toBe(false);
   });
 });

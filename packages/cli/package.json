@@ -1,6 +1,6 @@
 {
   "name": "@react-surgeon/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Click a bug. Diagnose, fix, and verify React applications locally.",
   "keywords": [
     "react-surgeon",

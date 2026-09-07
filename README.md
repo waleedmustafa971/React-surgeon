@@ -25,6 +25,12 @@ A development-only Vite plugin maps clicked DOM elements back to the JSX that re
 
 Everything runs on your machine, on CPU.
 
+<p align="center">
+  <img src="assets/media/select-element.gif" alt="Clicking Add to Cart adds two items instead of one; selecting the button reports src/components/ProductCard.tsx:19" width="820">
+</p>
+
+<p align="center"><em>One click adds two. Selecting the button reports the exact JSX that rendered it — <code>src/components/ProductCard.tsx:19</code> — without firing the app's own handler.</em></p>
+
 ## Contents
 
 - [How it works](#how-it-works)
@@ -37,7 +43,7 @@ Everything runs on your machine, on CPU.
 - [Verification, proof, and undo](#verification-proof-and-undo)
 - [The repair agent](#the-repair-agent)
 - [Configuration](#configuration)
-- [The local model](#the-local-model)
+- [The model](#the-model)
 - [VS Code extension](#vs-code-extension)
 - [Use with your own React project](#use-with-your-own-react-project)
 - [Architecture](#architecture)
@@ -71,25 +77,37 @@ flowchart LR
 
 ## Requirements
 
-- **Windows x64** — the initial tested target. The code is not Windows-only, but this is what has been exercised.
 - **Node.js 22.12+** and npm.
-- **llama.cpp** on `PATH` (`llama-server`, or `llama serve` as a fallback).
 - A **React project** — Vite-based for element selection.
+- Linux, macOS or Windows on x64/arm64. CI covers all three.
 
-CPU inference only. No CUDA, Docker, Python, API keys, cloud service, telemetry, vector database, or subscription. Designed to fit **6 GB RAM** by stopping the model before static checks and browser launch. Running other heavy applications may still cause paging.
+**Nothing else.** The llama.cpp runtime arrives as a prebuilt binary through npm, so there is no system install, no CUDA, no Docker, no Python, no API keys, no cloud service, no telemetry, and no subscription. Inference is CPU-only and stays on your machine. Designed to fit **6 GB RAM** by unloading the model before static checks and browser launch; running other heavy applications may still cause paging.
 
 ## Install
 
-```powershell
-npm install
-npm run build
-npx playwright install chromium
-npm run surgeon -- --verbose model setup
+```bash
+npm install -g @react-surgeon/cli
+cd your-react-app
+npm install -D @react-surgeon/vite-plugin
+react-surgeon init
 ```
 
-`model setup` downloads and caches the GGUF, starts llama.cpp, probes `/health`, asks for a tiny JSON response, and shuts it down. The first download can take several minutes; `--verbose` shows lifecycle and download progress. It reuses llama.cpp's cache and never deliberately redownloads a valid cached model.
+`init` does the whole setup in one command: detects your React project, writes `.react-surgeon/config.json`, adds `surgeon()` to your Vite config ahead of the React plugin, installs Chromium, then downloads and smoke-tests the model. It is idempotent, so re-run it after fixing anything it flags. Use `--skip-browser` or `--skip-model` to defer the slow parts.
 
-Run `npm run surgeon -- doctor` at any time to check OS, RAM, CPU, Node and model executable status.
+The Vite plugin is what maps a clicked element back to its JSX, so it belongs to the app being repaired rather than the CLI. The first model download is roughly 1 GB and takes a few minutes. `react-surgeon doctor` reports OS, RAM, CPU, Node, which provider is configured and where inference will happen.
+
+<details>
+<summary>Working from a clone of this repository instead</summary>
+
+```bash
+npm install
+npm run build
+npm run surgeon -- init
+```
+
+Then use `npm run surgeon -- COMMAND` wherever the docs say `react-surgeon COMMAND`.
+
+</details>
 
 ## Quick start
 
@@ -153,11 +171,12 @@ This overwrites only those three component files from stored fixtures — do not
 
 ## CLI reference
 
-Run `npm run surgeon -- [--project PATH] COMMAND` from this repository, or the workspace executable `npx react-surgeon` after building.
+Run `react-surgeon [--project PATH] COMMAND`, or `npm run surgeon -- COMMAND` from a clone of this repository.
 
 | Command                           | Purpose                                                                          |
 | --------------------------------- | -------------------------------------------------------------------------------- |
-| `doctor`                          | OS, RAM, CPU, Node and model executable status                                   |
+| `init`                            | Set up this project: config, Vite plugin, Chromium, model                        |
+| `doctor`                          | OS, RAM, CPU, Node, provider, and where inference will happen                    |
 | `model setup`                     | Download/cache, start, inference test, stop                                      |
 | `model start`                     | Keep the owned model running in the foreground                                   |
 | `model stop`                      | Stop the owned foreground model through its authenticated local control endpoint |
@@ -165,6 +184,7 @@ Run `npm run surgeon -- [--project PATH] COMMAND` from this repository, or the w
 | `xray`                            | Components, hooks and relationships as a text graph                              |
 | `health`                          | Deterministic diagnostic hints (for example, direct state mutation)              |
 | `start`                           | Model smoke test plus the selection and recording bridge                         |
+| `scenario new`                    | Draft an acceptance scenario from the last recorded reproduction                 |
 | `diagnose "task"`                 | Read-only local model diagnosis; never patches                                   |
 | `fix "task" --scenario file.json` | Reproduce, patch, check, replay, save proof                                      |
 | `verify --scenario file.json`     | Verify the current project state without patching                                |
@@ -172,6 +192,8 @@ Run `npm run surgeon -- [--project PATH] COMMAND` from this repository, or the w
 | `undo`                            | Restore the original files from the last patch session                           |
 
 Global options: `--project <path>` selects the React project root (defaults to the current directory), `--verbose` enables detailed lifecycle logs.
+
+`init` takes `--skip-browser` and `--skip-model`. `scenario new` takes `--out <file>` (default `scenarios/draft.json`) and `--name <name>`.
 
 `fix` and `verify` exit with code `1` when the result is not `VERIFIED`, so they compose in scripts.
 
@@ -207,7 +229,24 @@ A scenario is a JSON file with `name`, `baseURL`, and 1–200 `steps`. It is the
 
 Prefer accessible roles and names, or `data-testid`, over CSS selectors — they survive refactors. Browser navigation and network requests are restricted to localhost.
 
-**Recording a scenario.** While `start` is running, the overlay recorder captures clicks, changed inputs, form submissions and back/forward navigation into `.react-surgeon/recording.json`. Add your acceptance assertions to it before replaying. Password fields are recorded as `[REDACTED]` and cannot be replayed without a locally supplied demo value.
+**Recording a scenario.** While `start` is running, the overlay recorder captures clicks, changed inputs, form submissions and back/forward navigation into `.react-surgeon/recording.json`. Password fields are recorded as `[REDACTED]` and cannot be replayed without a locally supplied demo value.
+
+**Drafting one from the recording.** Writing the scenario is the part that actually costs time — finding stable targets and deciding what to assert. `scenario new` does the mechanical half:
+
+```bash
+react-surgeon scenario new --out scenarios/cart.json --name "One click adds exactly one item"
+```
+
+It replays your recording in a real browser, watches which `data-testid` values and which URL change, and writes a scenario that asserts the starting values, performs your recorded interactions, and asserts the ending values:
+
+```
+Observed during the reproduction:
+  cart-count: 0 -> 4
+```
+
+The catch, and it is deliberate: those ending values are **what the app currently does, which is the bug**. The draft is labelled accordingly and carries a `_draft` block listing exactly what to change. Edit `4` to the `2` you actually expect, delete the block, and run `fix`. The tool finds the targets; you still decide what correct means — which is the same reason it refuses to invent acceptance criteria anywhere else.
+
+If nothing changed during the reproduction, it says so: add `data-testid` to the values that should change and re-record.
 
 ## Verification, proof, and undo
 
@@ -256,39 +295,62 @@ The 4096-token window reserves a modest generation allowance and uses a conserva
 
 `.react-surgeon/config.json` is created with defaults on first run.
 
-| Key                                                   | Default                                 | Purpose                                                     |
-| ----------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
-| `model.provider`                                      | `llama.cpp`                             | Only local llama.cpp is implemented                         |
-| `model.repository`                                    | `Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF` | Hugging Face repository                                     |
-| `model.quantization`                                  | `Q4_K_M`                                | Or `Q3_K_M` for tighter memory                              |
-| `model.contextSize`                                   | `4096`                                  | 2048–16384                                                  |
-| `model.executable`                                    | _(auto)_                                | Absolute path to `llama-server` if not on `PATH`            |
-| `model.modelPath`                                     | _(auto)_                                | Absolute path to a GGUF, to share one cache across projects |
-| `model.port`                                          | `18081`                                 | Local inference port                                        |
-| `memoryMode`                                          | `low`                                   | `low` stops the model before verification                   |
-| `verification.lint` / `.test` / `.build` / `.browser` | `true`                                  | Disable a stage if your project lacks it                    |
-| `bridgePort`                                          | `18080`                                 | Selection bridge port                                       |
-| `appURL`                                              | `http://127.0.0.1:5173`                 | Where your dev server runs                                  |
+| Key                                                   | Default                                 | Purpose                                                                                                                                     |
+| ----------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `model.provider`                                      | `node-llama-cpp`                        | `node-llama-cpp` (bundled, nothing to install), `llama.cpp` (a `llama-server` on `PATH`), or `openai-compatible` (a server you already run) |
+| `model.repository`                                    | `Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF` | Hugging Face repository                                                                                                                     |
+| `model.quantization`                                  | `Q4_K_M`                                | Or `Q3_K_M` for tighter memory                                                                                                              |
+| `model.contextSize`                                   | `4096`                                  | 2048–16384                                                                                                                                  |
+| `model.threads`                                       | `4`                                     | CPU threads for inference                                                                                                                   |
+| `model.modelPath`                                     | _(auto)_                                | Absolute path to a GGUF, to share one cache across projects                                                                                 |
+| `model.executable`                                    | _(auto)_                                | `llama.cpp` only: path to `llama-server` if not on `PATH`                                                                                   |
+| `model.port`                                          | `18081`                                 | `llama.cpp` only: local inference port                                                                                                      |
+| `model.baseURL`                                       | `http://127.0.0.1:11434/v1`             | `openai-compatible` only: where the server listens                                                                                          |
+| `model.model`                                         | `qwen2.5-coder:1.5b`                    | `openai-compatible` only: model name the server exposes                                                                                     |
+| `model.apiKeyEnv`                                     | _(none)_                                | `openai-compatible` only: **name of the environment variable** holding a key, never the key itself                                          |
+| `model.allowRemote`                                   | `false`                                 | `openai-compatible` only: permit a non-loopback endpoint                                                                                    |
+| `memoryMode`                                          | `low`                                   | `low` unloads the model before verification                                                                                                 |
+| `verification.lint` / `.test` / `.build` / `.browser` | `true`                                  | Disable a stage if your project lacks it                                                                                                    |
+| `bridgePort`                                          | `18080`                                 | Selection bridge port                                                                                                                       |
+| `appURL`                                              | `http://127.0.0.1:5173`                 | Where your dev server runs                                                                                                                  |
 
-## The local model
+## The model
 
-Default: `Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF:Q4_K_M`, 4096-token context, temperature 0.1, a single generation, four CPU threads, zero GPU layers.
+Three providers, all behind one `ModelProvider` interface. Default: `Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF:Q4_K_M`, 4096-token context, temperature 0.1, a single generation, four CPU threads, zero GPU layers.
 
-`llama-server` is preferred and `llama serve` is detected as a fallback. Install missing llama.cpp with `winget install ggml.llamacpp`, or take an official build from [the llama.cpp releases](https://github.com/ggml-org/llama.cpp/releases).
+**`node-llama-cpp` (default).** llama.cpp compiled into a prebuilt binary that npm installs for your platform — nothing to put on `PATH`. It runs in-process, and the agent disposes the context and weights before static checks and the browser replay, which is what keeps the pipeline inside 6 GB. If your platform has no prebuilt binary, install fails softly and `doctor` reports `bundledRuntime: Missing`.
 
-The provider speaks llama.cpp's OpenAI-compatible local endpoint **as a wire protocol only** — it never contacts OpenAI or any hosted provider. Qwen is a configurable default behind a `ModelProvider` interface. Generation is constrained to JSON and a strict action schema. Repository text is treated as untrusted data.
+**`llama.cpp`.** Drives a `llama-server` (or `llama serve`) found on `PATH`, as a separate process on `model.port`. Use it when you want your own build — a different quantization, GPU offload, or a patched llama.cpp. Install it with `winget install ggml.llamacpp` or from [the llama.cpp releases](https://github.com/ggml-org/llama.cpp/releases).
+
+**`openai-compatible`.** Points at a server you already run — Ollama, LM Studio, llama-server, vLLM. React Surgeon does not own that process, so it never starts or stops it; `memoryMode: low` cannot unload someone else's server before the browser phase, so leave headroom yourself.
+
+```json
+{
+  "model": {
+    "provider": "openai-compatible",
+    "baseURL": "http://127.0.0.1:11434/v1",
+    "model": "qwen2.5-coder:1.5b"
+  }
+}
+```
+
+**The endpoint must be loopback.** A non-local `baseURL` is refused unless you explicitly set `model.allowRemote`, because sending your source code off the machine should be a decision, not a default. An API key is read from the environment variable named by `apiKeyEnv` and never stored in the config file.
+
+Generation is constrained to JSON: the two llama.cpp providers enforce a grammar, and because an arbitrary OpenAI-compatible server may ignore `response_format` entirely, responses are also unwrapped from markdown fences and surrounding prose before parsing. Repository text is treated as untrusted data throughout.
 
 ## VS Code extension
 
 ```powershell
 npm run package:vscode
-code --install-extension dist/react-surgeon-0.1.0.vsix
+code --install-extension dist/react-surgeon-0.2.0.vsix
 code examples/buggy-react-app
 ```
 
 Alternatively use **Extensions → … → Install from VSIX**. Start the demo in a terminal, open the React Surgeon Activity Bar, choose **Connect project**, then **Select UI element**. Enter a bug description, choose **Diagnose & Fix**, and select an acceptance scenario when prompted. The panel also exposes verification, proof and X-Ray.
 
-Workspace trust is required to execute project scripts. The extension needs Node, npm and llama.cpp on the host — they are not embedded in the VSIX.
+Workspace trust is required to execute project scripts. The extension needs Node and npm on the host.
+
+**The extension cannot use the bundled `node-llama-cpp` runtime.** That package is a platform-specific native binary, so embedding it would make each VSIX installable on exactly one operating system. Inside VS Code, set `model.provider` to `llama.cpp` (a `llama-server` on `PATH`) or `openai-compatible` (an Ollama or LM Studio you already run). The CLI has no such limitation.
 
 ## Use with your own React project
 

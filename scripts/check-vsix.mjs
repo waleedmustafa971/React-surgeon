@@ -6,11 +6,12 @@ import { createRequire } from "node:module";
 import Module from "node:module";
 import assert from "node:assert/strict";
 import yauzl from "yauzl";
+import { readFileSync } from "node:fs";
 const dest = path.resolve("dist/vsix-check");
 await fs.mkdir(dest, { recursive: true });
 await new Promise((resolve, reject) =>
   yauzl.open(
-    "dist/react-surgeon-0.1.0.vsix",
+    `dist/react-surgeon-${JSON.parse(readFileSync("packages/vscode/package.json", "utf8")).version}.vsix`,
     { lazyEntries: true },
     (error, zip) => {
       if (error) return reject(error);

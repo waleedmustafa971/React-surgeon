@@ -3,13 +3,15 @@ import { Command } from "commander";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import { createRequire } from "node:module";
 import {
   Agent,
   analyze,
   xray,
   detectProject,
   config,
-  LlamaCppProvider,
+  createProvider,
+  describeProvider,
   findLlama,
   Bridge,
   Workspace,
@@ -21,22 +23,26 @@ import {
   PatchEngine,
   modelControl,
   stopModel,
+  init,
+  run,
+  scaffoldScenario,
 } from "@react-surgeon/core";
+import type { SetupCapableProvider } from "@react-surgeon/core";
 import type { SelectedElement } from "@react-surgeon/shared";
 const cli = new Command()
   .name("react-surgeon")
   .description("Click a bug. Diagnose, fix, and verify your React app.")
-  .version("0.1.0")
+  .version("0.2.0")
   .option("-p, --project <path>", "React project root", process.cwd())
   .option("--verbose", "Detailed process logs");
-let model: LlamaCppProvider | undefined, bridge: Bridge | undefined;
+let model: SetupCapableProvider | undefined, bridge: Bridge | undefined;
 let closeControl: (() => Promise<void>) | undefined;
 const root = () => path.resolve(cli.opts().project);
 const output = (v: unknown) =>
   console.log(typeof v === "string" ? v : JSON.stringify(v, null, 2));
 async function provider() {
   const c = await config(root());
-  return (model ??= new LlamaCppProvider(
+  return (model ??= createProvider(
     root(),
     c.model,
     cli.opts().verbose ? console.log : () => {},
@@ -68,6 +74,25 @@ function warnUnverified(files: string[]) {
       `  ${undoCommand()}`,
   );
 }
+async function installChromium(cwd: string) {
+  // playwright-core ships the browser installer, so no extra dependency.
+  const cli = createRequire(import.meta.url).resolve("playwright-core/cli.js");
+  const r = await run(
+    process.execPath,
+    [cli, "install", "chromium"],
+    cwd,
+    15 * 60_000,
+  );
+  return {
+    ok: r.code === 0,
+    detail: (r.output || "")
+      .trim()
+      .split("\n")
+      .slice(-2)
+      .join(" ")
+      .slice(0, 300),
+  };
+}
 async function scenario(file: string) {
   return scenarioSchema.parse(
     JSON.parse(await fs.readFile(path.resolve(root(), file), "utf8")),
@@ -86,11 +111,19 @@ for (const signal of ["SIGINT", "SIGTERM"] as const)
     void close().finally(() => process.exit(0));
   });
 cli.command("doctor").action(async () => {
+  const c = await config(root());
   let llama = "Missing";
   try {
     llama = (await findLlama()).exe;
   } catch {
-    /* Report missing installation. */
+    /* Only the llama.cpp provider needs one on PATH. */
+  }
+  let bundled = "Missing";
+  try {
+    await import("node-llama-cpp");
+    bundled = "Installed";
+  } catch {
+    /* Reinstall without --omit=optional to get it. */
   }
   output({
     product: "React Surgeon Bootstrap",
@@ -100,10 +133,13 @@ cli.command("doctor").action(async () => {
     freeRAM_GB: +(os.freemem() / 2 ** 30).toFixed(2),
     cpuCores: os.cpus().length,
     node: process.version,
-    llama,
+    provider: c.model.provider,
+    inference: describeProvider(c.model),
+    bundledRuntime: bundled,
+    llamaOnPath: llama,
     gpuRequirement: "None",
     memoryMode: "LOW",
-    context: 4096,
+    context: c.model.contextSize,
   });
 });
 const m = cli.command("model");
@@ -121,6 +157,86 @@ m.command("stop").action(async () => {
   await stopModel(root());
   output("Owned local model stop requested.");
 });
+cli
+  .command("init")
+  .description("Set up React Surgeon in this project")
+  .option("--skip-browser", "Do not install Chromium")
+  .option("--skip-model", "Do not download or smoke-test the model")
+  .action(async (opts) => {
+    const steps = await init(root());
+    for (const s of steps)
+      console.log(
+        `${s.status === "done" ? "+" : s.status === "skipped" ? "=" : "!"} ${s.name}: ${s.detail}`,
+      );
+
+    if (opts.skipBrowser) console.log("= Chromium: skipped");
+    else {
+      console.log("* Chromium: installing…");
+      const r = await installChromium(root());
+      console.log(r.ok ? "+ Chromium: ready" : `! Chromium: ${r.detail}`);
+    }
+
+    if (opts.skipModel) console.log("= Model: skipped");
+    else {
+      const c = await config(root());
+      console.log(`* Model: ${describeProvider(c.model)}`);
+      try {
+        await (await provider()).setup();
+        console.log("+ Model: ready");
+      } catch (e) {
+        console.log(`! Model: ${(e as Error).message}`);
+      }
+    }
+
+    const failures = steps.filter((s) => s.status === "manual");
+    console.log(
+      failures.length
+        ? "\nSetup finished with manual steps above. Fix those, then re-run init."
+        : `\nReady. Start your app, then:\n  react-surgeon${
+            path.resolve(cli.opts().project) === process.cwd()
+              ? ""
+              : ` --project ${cli.opts().project}`
+          } start`,
+    );
+  });
+const sc = cli
+  .command("scenario")
+  .description("Work with acceptance scenarios");
+sc.command("new")
+  .description("Draft a scenario from the last recorded reproduction")
+  .option("-o, --out <file>", "Where to write it", "scenarios/draft.json")
+  .option("-n, --name <name>", "Scenario name")
+  .action(async (opts) => {
+    const file = path.join(root(), ".react-surgeon/recording.json");
+    let recording;
+    try {
+      recording = JSON.parse(await fs.readFile(file, "utf8"));
+    } catch {
+      throw new Error(
+        "No recording found. Run `react-surgeon start`, open the printed URL, press Record, reproduce the bug, then try again.",
+      );
+    }
+    const { scenario, observations } = await scaffoldScenario(recording, {
+      name: opts.name,
+    });
+    const out = path.resolve(root(), opts.out);
+    await fs.mkdir(path.dirname(out), { recursive: true });
+    await fs.writeFile(out, JSON.stringify(scenario, null, 2) + "\n");
+    console.log(`Wrote ${path.relative(root(), out)}`);
+    if (!observations.length)
+      console.log(
+        "No test IDs changed during the reproduction. Add data-testid attributes to the values that should change, then re-record.",
+      );
+    else {
+      console.log("\nObserved during the reproduction:");
+      for (const o of observations)
+        console.log(`  ${o.testId}: ${o.before} -> ${o.after}`);
+    }
+    console.log(
+      "\nThese assertions capture the CURRENT behaviour, bug included.\n" +
+        "Edit each value to what it should be, delete the _draft block, then run fix.",
+    );
+  });
 cli.command("scan").action(async () => output(await detectProject(root())));
 cli.command("xray").action(async () => output(xray(await analyze(root()))));
 cli

@@ -4,16 +4,39 @@ import { z } from "zod";
 export const configSchema = z.object({
   model: z
     .object({
-      provider: z.literal("llama.cpp").default("llama.cpp"),
+      /**
+       * `node-llama-cpp` needs no system install: npm ships a prebuilt binary
+       * for the platform. `llama.cpp` drives a llama-server found on PATH.
+       * `openai-compatible` talks to a server you already run, such as Ollama
+       * or LM Studio.
+       */
+      provider: z
+        .enum(["node-llama-cpp", "llama.cpp", "openai-compatible"])
+        .default("node-llama-cpp"),
       repository: z
         .string()
         .regex(/^[\w.-]+\/[\w.-]+$/)
         .default("Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF"),
       quantization: z.enum(["Q4_K_M", "Q3_K_M"]).default("Q4_K_M"),
       contextSize: z.number().int().min(2048).max(16384).default(4096),
+      threads: z.number().int().min(1).max(64).default(4),
       executable: z.string().optional(),
       modelPath: z.string().optional(),
       port: z.number().int().min(1024).max(65535).default(18081),
+      /** openai-compatible: where the server listens. */
+      baseURL: z.string().url().default("http://127.0.0.1:11434/v1"),
+      /** openai-compatible: model name the server exposes. */
+      model: z.string().default("qwen2.5-coder:1.5b"),
+      /**
+       * openai-compatible: the environment variable holding the API key, never
+       * the key itself. Local servers usually need none.
+       */
+      apiKeyEnv: z.string().optional(),
+      /**
+       * openai-compatible: inference leaves this machine only when explicitly
+       * allowed. Off by default, which keeps the local-only guarantee.
+       */
+      allowRemote: z.boolean().default(false),
     })
     .default({}),
   memoryMode: z.enum(["low", "auto"]).default("low"),

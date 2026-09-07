@@ -1,6 +1,11 @@
 import { build } from "esbuild";
 import { mkdir, copyFile, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
+import { readFile } from "node:fs/promises";
+
+const { version } = JSON.parse(
+  await readFile("packages/vscode/package.json", "utf8"),
+);
 await mkdir("dist", { recursive: true });
 await build({
   entryPoints: ["packages/vscode/src/extension.ts"],
@@ -9,7 +14,10 @@ await build({
   platform: "node",
   target: "node22",
   format: "cjs",
-  external: ["vscode"],
+  // node-llama-cpp is a platform-specific native binary using top-level
+  // await: bundling it breaks the CJS build and would make the VSIX
+  // installable on only one OS. It stays a runtime import.
+  external: ["vscode", "node-llama-cpp", "@node-llama-cpp/*"],
   plugins: [
     {
       name: "ship-playwright-runtime",
@@ -46,7 +54,7 @@ const r = spawnSync(
     "--no-dependencies",
     "--allow-missing-repository",
     "--out",
-    "../../dist/react-surgeon-0.1.0.vsix",
+    `../../dist/react-surgeon-${version}.vsix`,
   ],
   { cwd: "packages/vscode", stdio: "inherit", windowsHide: true },
 );
