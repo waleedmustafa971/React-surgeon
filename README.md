@@ -10,6 +10,13 @@
   A local, React-specific repair agent. No cloud, no API keys, no telemetry.
 </p>
 
+<p align="center">
+  <a href="https://github.com/waleedmustafa971/React-surgeon/actions/workflows/ci.yml"><img src="https://github.com/waleedmustafa971/React-surgeon/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license">
+  <img src="https://img.shields.io/badge/node-%E2%89%A522.12-brightgreen" alt="Node 22.12+">
+  <img src="https://img.shields.io/badge/inference-local%20CPU-0F2748" alt="Local CPU inference">
+</p>
+
 ---
 
 React Surgeon closes the loop between _seeing_ a bug in your running React app and _proving_ it is gone.
